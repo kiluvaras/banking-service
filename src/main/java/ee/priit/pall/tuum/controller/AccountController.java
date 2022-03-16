@@ -1,7 +1,8 @@
 package ee.priit.pall.tuum.controller;
 
 import ee.priit.pall.tuum.dto.AccountCreateRequest;
-import ee.priit.pall.tuum.entity.Account;
+import ee.priit.pall.tuum.dto.AccountCreateResponse;
+import ee.priit.pall.tuum.dto.AccountResponse;
 import ee.priit.pall.tuum.service.AccountService;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,13 +26,13 @@ public class AccountController {
 
 
     @PostMapping
-    public ResponseEntity<Account> createAccount(@RequestBody @Valid AccountCreateRequest request) {
-        Account response = service.createAccount(request);
+    public ResponseEntity<AccountCreateResponse> createAccount(@RequestBody @Valid AccountCreateRequest request) {
+        AccountCreateResponse response = service.createAccount(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Account> getAccount(@PathVariable long id) {
+    public ResponseEntity<AccountResponse> getAccount(@PathVariable long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 }

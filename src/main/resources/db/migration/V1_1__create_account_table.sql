@@ -1,5 +1,7 @@
 CREATE table account(
     id BIGSERIAL NOT NULL PRIMARY KEY,
+    created_at timestamp default now(),
+    updated_at timestamp default now(),
     customer_id BIGSERIAL NOT NULL,
     country VARCHAR
 );

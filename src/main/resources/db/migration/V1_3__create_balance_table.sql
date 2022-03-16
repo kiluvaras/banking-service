@@ -1,5 +1,7 @@
 CREATE TABLE balance (
     id BIGSERIAL NOT NULL PRIMARY KEY,
+    created_at timestamp default now(),
+    updated_at timestamp default now(),
     amount BIGINT DEFAULT 0 NOT NULL,
     account_id int NOT NULL,
     currency_id BIGSERIAL NOT NULL,

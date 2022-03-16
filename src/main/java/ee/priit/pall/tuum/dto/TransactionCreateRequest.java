@@ -1,6 +1,5 @@
 package ee.priit.pall.tuum.dto;
 
-import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.entity.Direction;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -23,7 +22,7 @@ public class TransactionCreateRequest {
     private Long amount;
 
     @NotNull(message = "CURRENCY_NOT_FOUND")
-    private CurrencyRequest currency;
+    private String currencyCode;
 
     @NotNull(message = "DESCRIPTION_NOT_FOUND")
     @NotEmpty(message = "DESCRIPTION_MUST_NOT_BE_EMPTY")

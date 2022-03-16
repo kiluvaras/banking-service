@@ -2,6 +2,8 @@ CREATE TYPE direction AS ENUM ('IN', 'OUT');
 
 CREATE TABLE transaction(
     id bigserial NOT NULL PRIMARY KEY,
+    created_at timestamp default now(),
+    updated_at timestamp default now(),
     direction direction NOT NULL,
     amount bigint NOT NULL,
     description text,

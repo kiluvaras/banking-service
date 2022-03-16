@@ -1,5 +1,6 @@
 package ee.priit.pall.tuum.dto;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,8 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CurrencyResponse {
+public class AccountResponse {
+
     private Long id;
-    private String name;
-    private String isoCode;
+    private Long customerId;
+    private List<BalanceResponse> balances;
 }

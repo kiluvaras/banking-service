@@ -1,18 +1,24 @@
 package ee.priit.pall.tuum.service;
 
-import ee.priit.pall.tuum.entity.Currency;
-import ee.priit.pall.tuum.repository.BalanceRepository;
+import ee.priit.pall.tuum.dto.BalanceResponse;
+import ee.priit.pall.tuum.dto.mapper.BalanceMapper;
 import ee.priit.pall.tuum.entity.Balance;
+import ee.priit.pall.tuum.entity.Currency;
+import ee.priit.pall.tuum.entity.Direction;
+import ee.priit.pall.tuum.repository.BalanceRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BalanceService {
-    private final BalanceRepository mapper;
+
+    private final BalanceRepository repository;
+    private final BalanceMapper mapper;
     private final CurrencyService currencyService;
 
-    public BalanceService(BalanceRepository mapper,
-      CurrencyService currencyService) {
+    public BalanceService(BalanceRepository repository,
+      BalanceMapper mapper, CurrencyService currencyService) {
+        this.repository = repository;
         this.mapper = mapper;
         this.currencyService = currencyService;
     }
@@ -22,33 +28,40 @@ public class BalanceService {
         if (currency == null) {
             throw new RuntimeException("Currency not found with iso_code: " + currencyCode);
         }
-        mapper.save(accountId, currency.getId());
+        repository.save(accountId, currency.getId());
     }
 
     public List<Balance> getBalances(Long accountId) {
-        return mapper.findByAccountId(accountId);
+        return repository.findByAccountId(accountId);
     }
 
-    public Balance debit(Long accountId, Long currencyId, Long amount) {
-        Balance balance = mapper.findByAccountIdAndCurrencyId(accountId, currencyId);
+    public BalanceResponse updateBalance(Direction direction, Long accountId, String currencyCode,
+      long amount) {
+        Currency currency = currencyService.getCurrency(currencyCode);
+        Balance balance = repository.findByAccountIdAndCurrencyId(accountId, currency.getId());
         if (balance == null) {
             throw new RuntimeException("BALANCE_NOT_FOUND");
         }
+
+        if (direction.equals(Direction.OUT)) {
+            debit(balance, amount);
+        } else {
+            credit(balance, amount);
+        }
+
+        balance = repository.findById(balance.getId());
+
+        return mapper.balanceToBalanceResponse(balance);
+    }
+
+    public void debit(Balance balance, long amount) {
         if (balance.getAmount() < amount) {
             throw new RuntimeException("NOT_ENOUGH_FUNDS");
         }
-        mapper.update(balance.getId(), balance.getAmount() - amount);
-
-        return balance;
+        repository.update(balance.getId(), balance.getAmount() - amount);
     }
 
-    public Balance credit(Long accountId, Long currencyId, Long amount) {
-        Balance balance = mapper.findByAccountIdAndCurrencyId(accountId, currencyId);
-        if (balance == null) {
-            throw new RuntimeException("BALANCE_NOT_FOUND");
-        }
-        mapper.update(balance.getId(), balance.getAmount() + amount);
-
-        return balance;
+    public void credit(Balance balance, long amount) {
+        repository.update(balance.getId(), balance.getAmount() + amount);
     }
 }

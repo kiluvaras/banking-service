@@ -1,5 +1,7 @@
 CREATE TABLE currency(
     id BIGSERIAL NOT NULL PRIMARY KEY,
+    created_at timestamp default now(),
+    updated_at timestamp default now(),
     name TEXT,
     iso_code VARCHAR(3) NOT NULL
 );

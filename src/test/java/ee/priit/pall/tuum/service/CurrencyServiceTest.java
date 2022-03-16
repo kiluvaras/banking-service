@@ -21,12 +21,12 @@ class CurrencyServiceTest {
     private final String SEK_NAME = "Swedish krona";
 
     @MockBean
-    private CurrencyRepository mapper;
+    private CurrencyRepository repository;
     private CurrencyService service;
 
     @BeforeEach
     void setup() {
-        service = new CurrencyService(mapper);
+        service = new CurrencyService(repository);
     }
 
     @Test
@@ -34,11 +34,11 @@ class CurrencyServiceTest {
         Currency usd = Currency.builder().id(1L).name("US dollar").isoCode("USD").build();
         Currency eur = Currency.builder().id(2L).name("Euro").isoCode("EUR").build();
         List<Currency> currencies = List.of(usd, eur);
-        when(mapper.findAll()).thenReturn(currencies);
+        when(repository.findAll()).thenReturn(currencies);
 
         List<Currency> result = service.getCurrencies();
 
-        verify(mapper).findAll();
+        verify(repository).findAll();
         assertThat(result)
           .isNotEmpty()
           .hasSize(currencies.size())
@@ -47,18 +47,18 @@ class CurrencyServiceTest {
 
     @Test
     void isCurrencySupported_currencyDoesNotExist_returnsFalse() {
-        when(mapper.findById(ID)).thenReturn(null);
+        when(repository.findByIsoCode(SEK_ISO_CODE)).thenReturn(null);
 
-        boolean result = service.isCurrencySupported(ID);
+        boolean result = service.isCurrencySupported(SEK_ISO_CODE);
 
         assertThat(result).isFalse();
     }
 
     @Test
     void isCurrencySupported_currencyExists_returnsTrue() {
-        when(mapper.findById(ID)).thenReturn(new Currency());
+        when(repository.findByIsoCode(SEK_ISO_CODE)).thenReturn(new Currency());
 
-        boolean result = service.isCurrencySupported(ID);
+        boolean result = service.isCurrencySupported(SEK_ISO_CODE);
 
         assertThat(result).isTrue();
     }
@@ -66,11 +66,11 @@ class CurrencyServiceTest {
     @Test
     void getCurrencyCodes_currenciesExist_returnsAllCurrencyCodes() {
         List<String> currencies = List.of("EUR", "USD", "SEK", "GBP");
-        when(mapper.findAllCurrencyCodes()).thenReturn(currencies);
+        when(repository.findAllCurrencyCodes()).thenReturn(currencies);
 
         List<String> result = service.getCurrencyCodes();
 
-        verify(mapper).findAllCurrencyCodes();
+        verify(repository).findAllCurrencyCodes();
         assertThat(result)
           .isNotEmpty()
           .hasSize(currencies.size())
@@ -79,7 +79,7 @@ class CurrencyServiceTest {
 
     @Test
     void getCurrency_currencyDoesNotExist_returnsNull() {
-        when(mapper.findByIsoCode(SEK_ISO_CODE)).thenReturn(null);
+        when(repository.findByIsoCode(SEK_ISO_CODE)).thenReturn(null);
 
         Currency result = service.getCurrency(SEK_ISO_CODE);
 
@@ -90,7 +90,7 @@ class CurrencyServiceTest {
     @Test
     void getCurrency_currencyExists_returnsCurrency() {
         Currency sek = Currency.builder().id(ID).name(SEK_NAME).isoCode(SEK_ISO_CODE).build();
-        when(mapper.findByIsoCode(SEK_ISO_CODE)).thenReturn(sek);
+        when(repository.findByIsoCode(SEK_ISO_CODE)).thenReturn(sek);
 
         Currency result = service.getCurrency(SEK_ISO_CODE);
 

@@ -2,6 +2,7 @@ package ee.priit.pall.tuum.service;
 
 import ee.priit.pall.tuum.dto.AccountCreateRequest;
 import ee.priit.pall.tuum.dto.AccountCreateResponse;
+import ee.priit.pall.tuum.dto.AccountResponse;
 import ee.priit.pall.tuum.dto.mapper.AccountMapper;
 import ee.priit.pall.tuum.entity.Account;
 import ee.priit.pall.tuum.entity.Balance;
@@ -26,8 +27,8 @@ public class AccountService {
         this.balanceService = balanceService;
     }
 
-    public Account createAccount(AccountCreateRequest request) {
-        if (!areCurrenciesSupported(request.getCurrencies())) {
+    public AccountCreateResponse createAccount(AccountCreateRequest request) {
+        if (!areCurrenciesSupported(request.getCurrencyCodes())) {
             throw new RuntimeException("UNSUPPORTED_CURRENCY");
         }
 
@@ -40,28 +41,26 @@ public class AccountService {
 
         Long accountId = account.getId();
 
-        for (String currency : request.getCurrencies()) {
+        for (String currency : request.getCurrencyCodes()) {
             balanceService.createBalance(accountId, currency);
         }
 
         List<Balance> balances = balanceService.getBalances(accountId);
         account.setBalances(balances);
-
-        AccountCreateResponse response = new AccountCreateResponse();
-        response.setId(account.getId());
-        response.setCustomerId(account.getCustomerId());
-
-        return account;
+        AccountCreateResponse response = mapper.accountToCreateResponse(account);
+        return response;
     }
 
-    public Account findById(long id) {
+    public AccountResponse findById(long id) {
         Account account = repository.findById(id);
 
         if (account == null) {
             throw new RuntimeException("Account not found with id: " + id);
         }
 
-        return account;
+        AccountResponse accountResponse = mapper.accountToResponse(account);
+
+        return accountResponse;
     }
 
     public boolean areCurrenciesSupported(List<String> currencies) {

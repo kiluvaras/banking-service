@@ -8,25 +8,25 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurrencyService {
 
-    private final CurrencyRepository mapper;
+    private final CurrencyRepository repository;
 
-    public CurrencyService(CurrencyRepository mapper) {
-        this.mapper = mapper;
+    public CurrencyService(CurrencyRepository repository) {
+        this.repository = repository;
     }
 
     public List<Currency> getCurrencies() {
-        return mapper.findAll();
+        return repository.findAll();
     }
 
-    boolean isCurrencySupported(Long id) {
-        return mapper.findById(id) != null;
+    boolean isCurrencySupported(String isoCode) {
+        return repository.findByIsoCode(isoCode) != null;
     }
 
     public List<String> getCurrencyCodes() {
-        return mapper.findAllCurrencyCodes();
+        return repository.findAllCurrencyCodes();
     }
 
     public Currency getCurrency(String isoCode) {
-        return mapper.findByIsoCode(isoCode);
+        return repository.findByIsoCode(isoCode);
     }
 }

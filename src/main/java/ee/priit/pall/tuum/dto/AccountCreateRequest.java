@@ -17,5 +17,5 @@ public class AccountCreateRequest {
     private String country;
 
     @NotEmpty(message = "CURRENCIES_NOT_FOUND")
-    private List<String> currencies;
+    private List<String> currencyCodes;
 }
