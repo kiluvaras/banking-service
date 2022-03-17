@@ -18,6 +18,7 @@ import ee.priit.pall.tuum.dto.mapper.BalanceMapperImpl;
 import ee.priit.pall.tuum.entity.Account;
 import ee.priit.pall.tuum.entity.Balance;
 import ee.priit.pall.tuum.entity.Currency;
+import ee.priit.pall.tuum.rabbit.RabbitMqProducer;
 import ee.priit.pall.tuum.repository.AccountRepository;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +40,7 @@ class AccountServiceTest {
     @MockBean private AccountRepository repository;
     @MockBean private CurrencyService currencyService;
     @MockBean private BalanceService balanceService;
+    @MockBean private RabbitMqProducer producer;
     private BalanceMapper balanceMapper;
     private AccountMapper accountMapper;
     private AccountService service;
@@ -47,7 +49,8 @@ class AccountServiceTest {
     void setup() {
         balanceMapper = new BalanceMapperImpl();
         accountMapper = new AccountMapperImpl(balanceMapper);
-        service = new AccountService(repository, accountMapper, currencyService, balanceService);
+        service = new AccountService(repository, accountMapper, currencyService, balanceService,
+          producer);
     }
 
     @Test

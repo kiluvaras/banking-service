@@ -6,6 +6,7 @@ import ee.priit.pall.tuum.dto.AccountResponse;
 import ee.priit.pall.tuum.dto.mapper.AccountMapper;
 import ee.priit.pall.tuum.entity.Account;
 import ee.priit.pall.tuum.entity.Balance;
+import ee.priit.pall.tuum.rabbit.RabbitMqProducer;
 import ee.priit.pall.tuum.repository.AccountRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,16 @@ public class AccountService {
     private final AccountMapper mapper;
     private final CurrencyService currencyService;
     private final BalanceService balanceService;
+    private final RabbitMqProducer producer;
 
     public AccountService(AccountRepository repository,
       AccountMapper mapper, CurrencyService currencyService,
-      BalanceService balanceService) {
+      BalanceService balanceService, RabbitMqProducer producer) {
         this.repository = repository;
         this.mapper = mapper;
         this.currencyService = currencyService;
         this.balanceService = balanceService;
+        this.producer = producer;
     }
 
     public AccountCreateResponse createAccount(AccountCreateRequest request) {
@@ -48,6 +51,8 @@ public class AccountService {
         List<Balance> balances = balanceService.getBalances(accountId);
         account.setBalances(balances);
         AccountCreateResponse response = mapper.accountToCreateResponse(account);
+
+        // TODO: publish account create message
         return response;
     }
 
@@ -59,6 +64,8 @@ public class AccountService {
         }
 
         AccountResponse accountResponse = mapper.accountToResponse(account);
+
+        producer.produce(accountResponse);
 
         return accountResponse;
     }

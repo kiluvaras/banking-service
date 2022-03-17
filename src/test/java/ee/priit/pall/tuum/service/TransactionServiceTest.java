@@ -12,13 +12,12 @@ import ee.priit.pall.tuum.dto.BalanceResponse;
 import ee.priit.pall.tuum.dto.TransactionCreateRequest;
 import ee.priit.pall.tuum.dto.TransactionCreateResponse;
 import ee.priit.pall.tuum.dto.TransactionResponse;
-import ee.priit.pall.tuum.dto.mapper.BalanceMapper;
-import ee.priit.pall.tuum.dto.mapper.BalanceMapperImpl;
 import ee.priit.pall.tuum.dto.mapper.TransactionMapper;
 import ee.priit.pall.tuum.dto.mapper.TransactionMapperImpl;
 import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.entity.Direction;
 import ee.priit.pall.tuum.entity.Transaction;
+import ee.priit.pall.tuum.rabbit.RabbitMqProducer;
 import ee.priit.pall.tuum.repository.TransactionRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,16 +44,16 @@ class TransactionServiceTest {
     private CurrencyService currencyService;
     @MockBean
     private AccountService accountService;
-    private BalanceMapper balanceMapper;
+    @MockBean
+    private RabbitMqProducer producer;
     private TransactionMapper mapper;
     private TransactionService service;
 
     @BeforeEach
     void setup() {
-        balanceMapper = new BalanceMapperImpl();
         mapper = new TransactionMapperImpl();
         service = new TransactionService(repository, mapper, balanceService,
-          currencyService, accountService);
+          currencyService, accountService, producer);
     }
 
     @Test
@@ -86,6 +85,7 @@ class TransactionServiceTest {
     void createTransaction_directionInValidInput_returnsResponse() {
         TransactionCreateRequest request = generateCreateRequest();
         request.setDirection(DIRECTION_IN);
+        request.setCurrencyCode(CURRENCY_CODE);
         BalanceResponse balanceResponse = new BalanceResponse();
         balanceResponse.setCurrencyCode(CURRENCY_CODE);
         balanceResponse.setAmount(AMOUNT);
@@ -94,6 +94,7 @@ class TransactionServiceTest {
         when(balanceService.updateBalance(request.getDirection(), request.getAccountId(),
           request.getCurrencyCode(), request.getAmount()))
           .thenReturn(balanceResponse);
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(Currency.builder().isoCode(CURRENCY_CODE).build());
 
         TransactionCreateResponse result = service.createTransaction(request);
 
@@ -108,6 +109,7 @@ class TransactionServiceTest {
     void createTransaction_directionOutValidInput_returnsResponse() {
         TransactionCreateRequest request = generateCreateRequest();
         request.setDirection(DIRECTION_OUT);
+        request.setCurrencyCode(CURRENCY_CODE);
         BalanceResponse balanceResponse = new BalanceResponse();
         balanceResponse.setCurrencyCode(CURRENCY_CODE);
         balanceResponse.setAmount(AMOUNT);
@@ -116,6 +118,7 @@ class TransactionServiceTest {
         when(balanceService.updateBalance(request.getDirection(), request.getAccountId(),
           request.getCurrencyCode(), request.getAmount()))
           .thenReturn(balanceResponse);
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(Currency.builder().isoCode(CURRENCY_CODE).build());
 
         TransactionCreateResponse result = service.createTransaction(request);
 

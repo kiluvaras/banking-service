@@ -8,9 +8,9 @@ import ee.priit.pall.tuum.dto.TransactionResponse;
 import ee.priit.pall.tuum.dto.mapper.TransactionMapper;
 import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.entity.Transaction;
+import ee.priit.pall.tuum.rabbit.RabbitMqProducer;
 import ee.priit.pall.tuum.repository.TransactionRepository;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,17 +21,19 @@ public class TransactionService {
     private final BalanceService balanceService;
     private final CurrencyService currencyService;
     private final AccountService accountService;
+    private final RabbitMqProducer producer;
 
     public TransactionService(TransactionRepository repository,
       TransactionMapper mapper,
       BalanceService balanceService,
       CurrencyService currencyService,
-      AccountService accountService) {
+      AccountService accountService, RabbitMqProducer producer) {
         this.repository = repository;
         this.mapper = mapper;
         this.balanceService = balanceService;
         this.currencyService = currencyService;
         this.accountService = accountService;
+        this.producer = producer;
     }
 
     public TransactionCreateResponse createTransaction(TransactionCreateRequest request) {
@@ -58,10 +60,14 @@ public class TransactionService {
 
     public List<TransactionResponse> getTransactions(long accountId) {
         List<Transaction> transactions = repository.findByAccountId(accountId);
-        return transactions
+        List<TransactionResponse> response = transactions
           .stream()
           .map(mapper::toTransactionResponse)
-          .collect(Collectors.toList());
+          .toList();
+
+        producer.produce(response);
+
+        return response;
     }
 
     private void validateCurrency(String currencyCode) {
