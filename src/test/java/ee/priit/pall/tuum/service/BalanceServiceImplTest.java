@@ -6,12 +6,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.dto.BalanceResponse;
 import ee.priit.pall.tuum.dto.mapper.BalanceMapper;
 import ee.priit.pall.tuum.dto.mapper.BalanceMapperImpl;
 import ee.priit.pall.tuum.entity.Balance;
 import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.entity.Direction;
+import ee.priit.pall.tuum.rabbit.RabbitMqProducer;
 import ee.priit.pall.tuum.repository.BalanceRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-class BalanceServiceTest {
+class BalanceServiceImplTest {
 
     private final long ID = 1337;
     private final Direction DIRECTION_IN = Direction.IN;
@@ -36,14 +38,16 @@ class BalanceServiceTest {
     @MockBean
     private BalanceRepository repository;
     @MockBean
-    private CurrencyService currencyService;
+    private CurrencyServiceImpl currencyService;
+    @MockBean
+    private RabbitMqProducer producer;
     private BalanceMapper mapper;
-    private BalanceService service;
+    private BalanceServiceImpl service;
 
     @BeforeEach
     void setup() {
         mapper = new BalanceMapperImpl();
-        service = new BalanceService(repository, mapper, currencyService);
+        service = new BalanceServiceImpl(repository, mapper, currencyService, producer);
     }
 
     @Test
@@ -51,7 +55,7 @@ class BalanceServiceTest {
         when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(null);
 
         assertThatThrownBy(() -> service.createBalance(ACCOUNT_ID, CURRENCY_CODE))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("Currency not found with iso_code: " + CURRENCY_CODE);
     }
 
@@ -90,8 +94,9 @@ class BalanceServiceTest {
 
         assertThatThrownBy(() -> service.updateBalance(DIRECTION_IN, ACCOUNT_ID, CURRENCY_CODE,
           TRANSACTION_AMOUNT))
-          .isExactlyInstanceOf(RuntimeException.class)
-          .hasMessage("BALANCE_NOT_FOUND");
+          .isExactlyInstanceOf(ApplicationException.class)
+          .hasMessage(String.format("Balance not found with account_id: %d, currency_id: %d", ACCOUNT_ID,
+            CURRENCY_ID));
     }
 
     @Test
@@ -104,7 +109,7 @@ class BalanceServiceTest {
 
         assertThatThrownBy(() -> service.updateBalance(DIRECTION_OUT, ACCOUNT_ID, CURRENCY_CODE,
           TRANSACTION_AMOUNT))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("NOT_ENOUGH_FUNDS");
     }
 

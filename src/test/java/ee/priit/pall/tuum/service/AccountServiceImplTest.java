@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.dto.AccountCreateRequest;
 import ee.priit.pall.tuum.dto.AccountCreateResponse;
 import ee.priit.pall.tuum.dto.AccountResponse;
@@ -29,7 +30,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-class AccountServiceTest {
+class AccountServiceImplTest {
 
     private final long ID = 3L;
     private final String ISO_CODE = "EUR";
@@ -38,18 +39,18 @@ class AccountServiceTest {
     private final long NEW_BALANCE_AMOUNT = 0;
 
     @MockBean private AccountRepository repository;
-    @MockBean private CurrencyService currencyService;
-    @MockBean private BalanceService balanceService;
+    @MockBean private CurrencyServiceImpl currencyService;
+    @MockBean private BalanceServiceImpl balanceService;
     @MockBean private RabbitMqProducer producer;
     private BalanceMapper balanceMapper;
     private AccountMapper accountMapper;
-    private AccountService service;
+    private AccountServiceImpl service;
 
     @BeforeEach
     void setup() {
         balanceMapper = new BalanceMapperImpl();
         accountMapper = new AccountMapperImpl(balanceMapper);
-        service = new AccountService(repository, accountMapper, currencyService, balanceService,
+        service = new AccountServiceImpl(repository, accountMapper, currencyService, balanceService,
           producer);
     }
 
@@ -62,7 +63,7 @@ class AccountServiceTest {
         when(currencyService.isCurrencySupported(ISO_CODE)).thenReturn(false);
 
         assertThatThrownBy(() -> service.createAccount(request))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("UNSUPPORTED_CURRENCY");
     }
 
@@ -76,7 +77,7 @@ class AccountServiceTest {
         when(repository.save(any(Account.class))).thenReturn(0);
 
         assertThatThrownBy(() -> service.createAccount(request))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("ACCOUNT_SAVE_FAILED");
     }
 
@@ -111,7 +112,7 @@ class AccountServiceTest {
         when(repository.findById(ID)).thenReturn(null);
 
         assertThatThrownBy(() -> service.findById(ID))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("Account not found with id: " + ID);
     }
 

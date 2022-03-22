@@ -3,7 +3,7 @@ package ee.priit.pall.tuum.controller;
 import ee.priit.pall.tuum.dto.TransactionCreateRequest;
 import ee.priit.pall.tuum.dto.TransactionCreateResponse;
 import ee.priit.pall.tuum.dto.TransactionResponse;
-import ee.priit.pall.tuum.service.TransactionService;
+import ee.priit.pall.tuum.service.TransactionServiceImpl;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/rest/transactions")
 public class TransactionController {
 
-    private final TransactionService service;
+    private final TransactionServiceImpl service;
 
-    public TransactionController(TransactionService service) {
+    public TransactionController(TransactionServiceImpl service) {
         this.service = service;
     }
 

@@ -14,9 +14,7 @@ public class RabbitMqProducer {
         this.binding = binding;
     }
 
-    public void produce(Object message) {
-        System.out.println("Producing message...");
+    public void publish(Object message) {
         template.convertAndSend(binding.getExchange(), binding.getRoutingKey(), message);
-        System.out.println("Message sending finished");
     }
 }

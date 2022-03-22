@@ -1,7 +1,9 @@
 # Tips and tricks
 
-### Database setup
-* run 
-  * docker run --name tuum -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 postgres
-* ``docker-compose build``
+### Start the container
 * ``docker-compose up -d``
+
+### Stop the container and remove volumes
+* ``docker-compose down -v``
+
+### Answers to questions can be found in QA.md

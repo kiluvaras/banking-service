@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AccountCreateResponse {
 
-    private Long id;
-    private Long customerId;
+    private long id;
+    private long customerId;
     private List<BalanceResponse> balances;
 }

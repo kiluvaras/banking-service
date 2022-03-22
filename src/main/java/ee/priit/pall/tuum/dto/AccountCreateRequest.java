@@ -13,7 +13,7 @@ import lombok.Setter;
 public class AccountCreateRequest {
 
     @NotNull(message = "CUSTOMER_ID_NOT_FOUND")
-    private long customerId;
+    private Long customerId;
     private String country;
 
     @NotEmpty(message = "CURRENCIES_NOT_FOUND")

@@ -3,7 +3,7 @@ package ee.priit.pall.tuum.controller;
 import ee.priit.pall.tuum.dto.AccountCreateRequest;
 import ee.priit.pall.tuum.dto.AccountCreateResponse;
 import ee.priit.pall.tuum.dto.AccountResponse;
-import ee.priit.pall.tuum.service.AccountService;
+import ee.priit.pall.tuum.service.AccountServiceImpl;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/rest/accounts")
 public class AccountController {
 
-    private final AccountService service;
+    private final AccountServiceImpl service;
 
-    public AccountController(AccountService service) {
+    public AccountController(AccountServiceImpl service) {
         this.service = service;
     }
 

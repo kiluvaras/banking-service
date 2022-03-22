@@ -14,7 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-class CurrencyServiceTest {
+class CurrencyServiceImplTest {
 
     private final Long ID = 1L;
     private final String SEK_ISO_CODE = "SEK";
@@ -22,27 +22,11 @@ class CurrencyServiceTest {
 
     @MockBean
     private CurrencyRepository repository;
-    private CurrencyService service;
+    private CurrencyServiceImpl service;
 
     @BeforeEach
     void setup() {
-        service = new CurrencyService(repository);
-    }
-
-    @Test
-    void getCurrencies_currenciesExist_returnsAllCurrencies() {
-        Currency usd = Currency.builder().id(1L).name("US dollar").isoCode("USD").build();
-        Currency eur = Currency.builder().id(2L).name("Euro").isoCode("EUR").build();
-        List<Currency> currencies = List.of(usd, eur);
-        when(repository.findAll()).thenReturn(currencies);
-
-        List<Currency> result = service.getCurrencies();
-
-        verify(repository).findAll();
-        assertThat(result)
-          .isNotEmpty()
-          .hasSize(currencies.size())
-          .containsAll(currencies);
+        service = new CurrencyServiceImpl(repository);
     }
 
     @Test

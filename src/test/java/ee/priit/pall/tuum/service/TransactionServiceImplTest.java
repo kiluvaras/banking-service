@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.dto.AccountResponse;
 import ee.priit.pall.tuum.dto.BalanceResponse;
 import ee.priit.pall.tuum.dto.TransactionCreateRequest;
@@ -27,7 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-class TransactionServiceTest {
+class TransactionServiceImplTest {
 
     private final long ACCOUNT_ID = 3L;
     private final Direction DIRECTION_IN = Direction.IN;
@@ -39,20 +40,20 @@ class TransactionServiceTest {
     @MockBean
     private TransactionRepository repository;
     @MockBean
-    private BalanceService balanceService;
+    private BalanceServiceImpl balanceService;
     @MockBean
-    private CurrencyService currencyService;
+    private CurrencyServiceImpl currencyService;
     @MockBean
-    private AccountService accountService;
+    private AccountServiceImpl accountService;
     @MockBean
     private RabbitMqProducer producer;
     private TransactionMapper mapper;
-    private TransactionService service;
+    private TransactionServiceImpl service;
 
     @BeforeEach
     void setup() {
         mapper = new TransactionMapperImpl();
-        service = new TransactionService(repository, mapper, balanceService,
+        service = new TransactionServiceImpl(repository, mapper, balanceService,
           currencyService, accountService, producer);
     }
 
@@ -63,7 +64,7 @@ class TransactionServiceTest {
         when(currencyService.isCurrencySupported(CURRENCY_CODE)).thenReturn(false);
 
         assertThatThrownBy(() -> service.createTransaction(request))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("CURRENCY_NOT_SUPPORTED");
     }
 
@@ -77,7 +78,7 @@ class TransactionServiceTest {
         when(accountService.findById(ACCOUNT_ID)).thenReturn(null);
 
         assertThatThrownBy(() -> service.createTransaction(request))
-          .isExactlyInstanceOf(RuntimeException.class)
+          .isExactlyInstanceOf(ApplicationException.class)
           .hasMessage("Account not found with id: " + ACCOUNT_ID);
     }
 
@@ -138,6 +139,7 @@ class TransactionServiceTest {
         transaction.setAccountId(ACCOUNT_ID);
         transaction.setDirection(DIRECTION_OUT);
         List<Transaction> transactions = List.of(transaction);
+        when(accountService.findById(ACCOUNT_ID)).thenReturn(new AccountResponse());
         when(repository.findByAccountId(ACCOUNT_ID)).thenReturn(transactions);
 
         List<TransactionResponse> result = service.getTransactions(ACCOUNT_ID);

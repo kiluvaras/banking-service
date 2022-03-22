@@ -10,10 +10,15 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - MYBATIS_CONFIGURATION_MAP-UNDERSCORE-TO-CAMEL-CASE=true
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - RABBIT_QUEUE_NAME=banking-queue
+      - RABBIT_EXCHANGE_NAME=banking-exchange
+      - RABBIT_ROUTING_KEY=banking.#
     depends_on:
       - db
       - rabbitmq
   db:
+    container_name: postgres
     image: postgres
     ports:
       - "5432:5432"
@@ -22,6 +27,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:management
     ports:
       - "5672:5672"
