@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.dto.BalanceResponse;
+import ee.priit.pall.tuum.dto.CurrencyResponse;
 import ee.priit.pall.tuum.dto.mapper.BalanceMapper;
 import ee.priit.pall.tuum.dto.mapper.BalanceMapperImpl;
 import ee.priit.pall.tuum.entity.Balance;
@@ -61,8 +62,8 @@ class BalanceServiceImplTest {
 
     @Test
     void createBalance_validInput_createsBalance() {
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(
-          Currency.builder().id(CURRENCY_ID).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
 
         service.createBalance(ACCOUNT_ID, CURRENCY_CODE);
 
@@ -84,12 +85,10 @@ class BalanceServiceImplTest {
           .containsExactlyInAnyOrder(balance);
     }
 
-    // TODO: debit & credit tests
-
     @Test
     void updateBalance_balanceNotFound_throwsException() {
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(
-          Currency.builder().id(CURRENCY_ID).isoCode(CURRENCY_CODE).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
         when(repository.findByAccountIdAndCurrencyId(ACCOUNT_ID, CURRENCY_ID)).thenReturn(null);
 
         assertThatThrownBy(() -> service.updateBalance(DIRECTION_IN, ACCOUNT_ID, CURRENCY_CODE,
@@ -103,8 +102,8 @@ class BalanceServiceImplTest {
     void updateBalance_directionOutNotEnoughFunds_throwsException() {
         Balance balance = new Balance();
         balance.setAmount(BALANCE_AMOUNT_ZERO);
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(
-          Currency.builder().id(CURRENCY_ID).isoCode(CURRENCY_CODE).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
         when(repository.findByAccountIdAndCurrencyId(ACCOUNT_ID, CURRENCY_ID)).thenReturn(balance);
 
         assertThatThrownBy(() -> service.updateBalance(DIRECTION_OUT, ACCOUNT_ID, CURRENCY_CODE,
@@ -119,8 +118,8 @@ class BalanceServiceImplTest {
         balance.setId(ID);
         balance.setAmount(BALANCE_AMOUNT);
         balance.setCurrency(Currency.builder().isoCode(CURRENCY_CODE).build());
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(
-          Currency.builder().id(CURRENCY_ID).isoCode(CURRENCY_CODE).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
         when(repository.findByAccountIdAndCurrencyId(ACCOUNT_ID, CURRENCY_ID)).thenReturn(balance);
         when(repository.findById(anyLong())).thenReturn(balance);
 
@@ -141,8 +140,8 @@ class BalanceServiceImplTest {
         balance.setId(ID);
         balance.setAmount(BALANCE_AMOUNT);
         balance.setCurrency(Currency.builder().isoCode(CURRENCY_CODE).build());
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(
-          Currency.builder().id(CURRENCY_ID).isoCode(CURRENCY_CODE).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
         when(repository.findByAccountIdAndCurrencyId(ACCOUNT_ID, CURRENCY_ID)).thenReturn(balance);
         when(repository.findById(anyLong())).thenReturn(balance);
 
@@ -155,5 +154,13 @@ class BalanceServiceImplTest {
           .contains(CURRENCY_CODE);
         verify(repository).update(ID, BALANCE_AMOUNT - TRANSACTION_AMOUNT);
 
+    }
+
+    private CurrencyResponse getMockCurrencyResponse() {
+        CurrencyResponse currency = new CurrencyResponse();
+        currency.setId(CURRENCY_ID);;
+        currency.setIsoCode(CURRENCY_CODE);
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
+        return currency;
     }
 }

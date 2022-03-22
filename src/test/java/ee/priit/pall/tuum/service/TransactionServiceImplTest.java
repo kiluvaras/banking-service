@@ -10,9 +10,12 @@ import static org.mockito.Mockito.when;
 import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.dto.AccountResponse;
 import ee.priit.pall.tuum.dto.BalanceResponse;
+import ee.priit.pall.tuum.dto.CurrencyResponse;
 import ee.priit.pall.tuum.dto.TransactionCreateRequest;
 import ee.priit.pall.tuum.dto.TransactionCreateResponse;
 import ee.priit.pall.tuum.dto.TransactionResponse;
+import ee.priit.pall.tuum.dto.mapper.CurrencyMapper;
+import ee.priit.pall.tuum.dto.mapper.CurrencyMapperImpl;
 import ee.priit.pall.tuum.dto.mapper.TransactionMapper;
 import ee.priit.pall.tuum.dto.mapper.TransactionMapperImpl;
 import ee.priit.pall.tuum.entity.Currency;
@@ -48,13 +51,15 @@ class TransactionServiceImplTest {
     @MockBean
     private RabbitMqProducer producer;
     private TransactionMapper mapper;
+    private CurrencyMapper currencyMapper;
     private TransactionServiceImpl service;
 
     @BeforeEach
     void setup() {
         mapper = new TransactionMapperImpl();
+        currencyMapper = new CurrencyMapperImpl();
         service = new TransactionServiceImpl(repository, mapper, balanceService,
-          currencyService, accountService, producer);
+          currencyService, accountService, producer, currencyMapper);
     }
 
     @Test
@@ -95,7 +100,8 @@ class TransactionServiceImplTest {
         when(balanceService.updateBalance(request.getDirection(), request.getAccountId(),
           request.getCurrencyCode(), request.getAmount()))
           .thenReturn(balanceResponse);
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(Currency.builder().isoCode(CURRENCY_CODE).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
 
         TransactionCreateResponse result = service.createTransaction(request);
 
@@ -119,7 +125,8 @@ class TransactionServiceImplTest {
         when(balanceService.updateBalance(request.getDirection(), request.getAccountId(),
           request.getCurrencyCode(), request.getAmount()))
           .thenReturn(balanceResponse);
-        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(Currency.builder().isoCode(CURRENCY_CODE).build());
+        CurrencyResponse currency = getMockCurrencyResponse();
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
 
         TransactionCreateResponse result = service.createTransaction(request);
 
@@ -158,5 +165,12 @@ class TransactionServiceImplTest {
         request.setCurrencyCode(CURRENCY_CODE);
         request.setDescription(DESCRIPTION);
         return request;
+    }
+
+    private CurrencyResponse getMockCurrencyResponse() {
+        CurrencyResponse currency = new CurrencyResponse();
+        currency.setIsoCode(CURRENCY_CODE);
+        when(currencyService.getCurrency(CURRENCY_CODE)).thenReturn(currency);
+        return currency;
     }
 }

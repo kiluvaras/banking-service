@@ -4,9 +4,11 @@ import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.controller.exception.ErrorCode;
 import ee.priit.pall.tuum.dto.AccountResponse;
 import ee.priit.pall.tuum.dto.BalanceResponse;
+import ee.priit.pall.tuum.dto.CurrencyResponse;
 import ee.priit.pall.tuum.dto.TransactionCreateRequest;
 import ee.priit.pall.tuum.dto.TransactionCreateResponse;
 import ee.priit.pall.tuum.dto.TransactionResponse;
+import ee.priit.pall.tuum.dto.mapper.CurrencyMapper;
 import ee.priit.pall.tuum.dto.mapper.TransactionMapper;
 import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.entity.Transaction;
@@ -24,18 +26,21 @@ public class TransactionServiceImpl implements TransactionService {
     private final CurrencyServiceImpl currencyService;
     private final AccountServiceImpl accountService;
     private final RabbitMqProducer producer;
+    private final CurrencyMapper currencyMapper;
 
     public TransactionServiceImpl(TransactionRepository repository,
       TransactionMapper mapper,
       BalanceServiceImpl balanceService,
       CurrencyServiceImpl currencyService,
-      AccountServiceImpl accountService, RabbitMqProducer producer) {
+      AccountServiceImpl accountService, RabbitMqProducer producer,
+      CurrencyMapper currencyMapper) {
         this.repository = repository;
         this.mapper = mapper;
         this.balanceService = balanceService;
         this.currencyService = currencyService;
         this.accountService = accountService;
         this.producer = producer;
+        this.currencyMapper = currencyMapper;
     }
 
     public TransactionCreateResponse createTransaction(TransactionCreateRequest request) {
@@ -48,12 +53,13 @@ public class TransactionServiceImpl implements TransactionService {
           request.getCurrencyCode(),
           request.getAmount()
         );
-        Currency currency = currencyService.getCurrency(request.getCurrencyCode());
+        CurrencyResponse currencyResponse = currencyService.getCurrency(request.getCurrencyCode());
+        Currency currency = currencyMapper.toEntity(currencyResponse);
         Transaction transaction = mapper.transactionCreateRequestToTransaction(request);
         transaction.setCurrency(currency);
         repository.save(transaction);
 
-        TransactionCreateResponse transactionResponse = mapper.transactionToTransactionCreateResponse(
+        TransactionCreateResponse transactionResponse = mapper.toTransactionCreateResponse(
           transaction);
         transactionResponse.setBalance(balance.getAmount());
         producer.publish(transactionResponse);

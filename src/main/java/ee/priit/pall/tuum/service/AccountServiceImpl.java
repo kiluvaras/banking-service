@@ -62,7 +62,8 @@ public class AccountServiceImpl implements AccountService {
         Account account = repository.findById(id);
 
         if (account == null) {
-            throw new ApplicationException(ErrorCode.ENTITY_NOT_FOUND, "Account not found with id: " + id);
+            throw new ApplicationException(ErrorCode.ENTITY_NOT_FOUND,
+              "Account not found with id: " + id);
         }
 
         return mapper.accountToResponse(account);

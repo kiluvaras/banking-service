@@ -10,10 +10,12 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface TransactionMapper {
+
     @Mapping(source = "currencyCode", target = "currency.isoCode")
     Transaction transactionCreateRequestToTransaction(TransactionCreateRequest request);
+
     @Mapping(source = "transaction.currency.isoCode", target = "currencyCode")
-    TransactionCreateResponse transactionToTransactionCreateResponse(Transaction transaction);
+    TransactionCreateResponse toTransactionCreateResponse(Transaction transaction);
 
     @Mapping(source = "transaction.currency.isoCode", target = "currencyCode")
     TransactionResponse toTransactionResponse(Transaction transaction);

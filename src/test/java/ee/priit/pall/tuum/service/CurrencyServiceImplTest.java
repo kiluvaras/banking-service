@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import ee.priit.pall.tuum.dto.CurrencyResponse;
+import ee.priit.pall.tuum.dto.mapper.CurrencyMapper;
+import ee.priit.pall.tuum.dto.mapper.CurrencyMapperImpl;
 import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.repository.CurrencyRepository;
 import java.util.List;
@@ -22,11 +25,13 @@ class CurrencyServiceImplTest {
 
     @MockBean
     private CurrencyRepository repository;
+    private CurrencyMapper mapper;
     private CurrencyServiceImpl service;
 
     @BeforeEach
     void setup() {
-        service = new CurrencyServiceImpl(repository);
+        mapper = new CurrencyMapperImpl();
+        service = new CurrencyServiceImpl(repository, mapper);
     }
 
     @Test
@@ -65,7 +70,7 @@ class CurrencyServiceImplTest {
     void getCurrency_currencyDoesNotExist_returnsNull() {
         when(repository.findByIsoCode(SEK_ISO_CODE)).thenReturn(null);
 
-        Currency result = service.getCurrency(SEK_ISO_CODE);
+        CurrencyResponse result = service.getCurrency(SEK_ISO_CODE);
 
         assertThat(result)
           .isNull();
@@ -76,7 +81,7 @@ class CurrencyServiceImplTest {
         Currency sek = Currency.builder().id(ID).name(SEK_NAME).isoCode(SEK_ISO_CODE).build();
         when(repository.findByIsoCode(SEK_ISO_CODE)).thenReturn(sek);
 
-        Currency result = service.getCurrency(SEK_ISO_CODE);
+        CurrencyResponse result = service.getCurrency(SEK_ISO_CODE);
 
         assertThat(result)
           .isNotNull()

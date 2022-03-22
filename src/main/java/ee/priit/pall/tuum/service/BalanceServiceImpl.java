@@ -3,9 +3,9 @@ package ee.priit.pall.tuum.service;
 import ee.priit.pall.tuum.controller.exception.ApplicationException;
 import ee.priit.pall.tuum.controller.exception.ErrorCode;
 import ee.priit.pall.tuum.dto.BalanceResponse;
+import ee.priit.pall.tuum.dto.CurrencyResponse;
 import ee.priit.pall.tuum.dto.mapper.BalanceMapper;
 import ee.priit.pall.tuum.entity.Balance;
-import ee.priit.pall.tuum.entity.Currency;
 import ee.priit.pall.tuum.entity.Direction;
 import ee.priit.pall.tuum.rabbit.RabbitMqProducer;
 import ee.priit.pall.tuum.repository.BalanceRepository;
@@ -30,7 +30,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     public void createBalance(Long accountId, String currencyCode) {
-        Currency currency = currencyService.getCurrency(currencyCode);
+        CurrencyResponse currency = currencyService.getCurrency(currencyCode);
         if (currency == null) {
             throw new ApplicationException(ErrorCode.ENTITY_NOT_FOUND,
               "Currency not found with iso_code: " + currencyCode);
@@ -47,7 +47,7 @@ public class BalanceServiceImpl implements BalanceService {
 
     public BalanceResponse updateBalance(Direction direction, Long accountId, String currencyCode,
       long amount) {
-        Currency currency = currencyService.getCurrency(currencyCode);
+        CurrencyResponse currency = currencyService.getCurrency(currencyCode);
         Balance balance = repository.findByAccountIdAndCurrencyId(accountId, currency.getId());
         if (balance == null) {
             throw new ApplicationException(ErrorCode.ENTITY_NOT_FOUND,
